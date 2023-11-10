@@ -1,2 +1,7 @@
 server:
   port: 9030
+spring:
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
