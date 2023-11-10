@@ -2,8 +2,10 @@ package com.rionoj.codesandbox.controller;
 
 import com.rionoj.codesandbox.JavaDockerCodeSandbox;
 import com.rionoj.codesandbox.JavaNativeCodeSandbox;
+import com.rionoj.codesandbox.containerpool.MyGenericObjectPool;
 import com.rionoj.codesandbox.model.ExecuteCodeReps;
 import com.rionoj.codesandbox.model.ExecuteCodeReq;
+import com.rionoj.codesandbox.model.JdkContainer;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +28,8 @@ public class CodeSandboxController {
     private static final String AUTH_REQUEST_SECRET = "rion";
 
     @Resource
+    private MyGenericObjectPool genericObjectPool;
+    @Resource
     private JavaNativeCodeSandbox javaNativeCodeSandbox;
     @Resource
     private JavaDockerCodeSandbox javaDockerCodeSandbox;
@@ -46,6 +50,10 @@ public class CodeSandboxController {
         if (executeCodeReq == null) {
             throw new RuntimeException("请求为空");
         }
-        return javaDockerCodeSandbox.executeCode(executeCodeReq);
+        JdkContainer jdkContainer = genericObjectPool.borrow();
+        ExecuteCodeReps executeCodeReps = javaDockerCodeSandbox.executeCode(executeCodeReq, jdkContainer.getId());
+        genericObjectPool.returnObject(jdkContainer);
+        System.out.println(executeCodeReq);
+        return executeCodeReps;
     }
 }

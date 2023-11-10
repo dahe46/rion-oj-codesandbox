@@ -36,6 +36,7 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
         ExecuteMessage compileCodeExecuteMessage = compileCode(userCodeFile);
         System.out.println(compileCodeExecuteMessage);
 
+        // todo
         // 3. 执行代码，得到输出结果
         List<ExecuteMessage> executeMessageList = runCode(userCodeFile, inputList);
 
@@ -51,6 +52,33 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
         return executeCodeReps;
     }
 
+    public ExecuteCodeReps executeCode(ExecuteCodeReq executeCodeReq, String containerId) {
+        List<String> inputList = executeCodeReq.getInputList();
+        String code = executeCodeReq.getCode();
+        String language = executeCodeReq.getLanguage();
+
+        // 1、将用户代码保存为文件
+        File userCodeFile = saveCode(code, containerId);
+
+        // 2、编译代码
+        ExecuteMessage compileCodeExecuteMessage = compileCode(userCodeFile);
+        System.out.println(compileCodeExecuteMessage);
+
+        // todo
+        // 3. 执行代码，得到输出结果
+        List<ExecuteMessage> executeMessageList = runCode(userCodeFile, inputList, containerId);
+
+        // 4. 收集整理输出结果
+        ExecuteCodeReps executeCodeReps = getOutput(executeMessageList);
+
+        // 5. 文件清理
+        boolean delFile = delFile(userCodeFile, containerId);
+        if (!delFile) {
+            log.warn("delete file error，userCodePath：{}", userCodeFile.getAbsolutePath());
+        }
+
+        return executeCodeReps;
+    }
     /**
      * 1、将用户代码保存为文件
      * @param code 用户代码文本
@@ -69,6 +97,10 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
         return FileUtil.writeString(code, userCodePath, StandardCharsets.UTF_8);
     }
 
+    public File saveCode(String code, String containerId) {
+        return null;
+    }
+
     /**
      * 2、编译代码
      * @param userCodeFile 用户代码文件
@@ -77,6 +109,7 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
     public ExecuteMessage compileCode(File userCodeFile) {
         String compileCmd = String.format("javac -encoding utf-8 %s", userCodeFile.getAbsolutePath());
         try {
+            System.out.println(compileCmd);
             Process process = Runtime.getRuntime().exec(compileCmd);
             ExecuteMessage executeMessage = ProcessUtil.runProcessAndGetMessage(process, "编译");
             if (executeMessage.getExitValue() != 0) {
@@ -85,6 +118,7 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
             return executeMessage;
         } catch (IOException e) {
 //            return getErrorResponse(e);
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -122,6 +156,9 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
             }
         }
         return executeMessageList;
+    }
+    public List<ExecuteMessage> runCode(File userCodeFile, List<String> inputList, String containerId) {
+        return null;
     }
 
     /**
@@ -179,6 +216,10 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
             System.out.println("删除" + (del ? "成功" : "失败"));
             return del;
         }
+        return true;
+    }
+
+    public boolean delFile(File userCodeFile, String containerId) {
         return true;
     }
 
